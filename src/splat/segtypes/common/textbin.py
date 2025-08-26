@@ -92,8 +92,13 @@ class CommonSegTextbin(CommonSegment):
         f.write(f'.incbin "{binpath.as_posix()}"\n')
 
         if sym is not None:
+            if options.opts.asm_emit_size_directive:
+                f.write(f".size {sym.name}, . - {sym.name}\n")
+
             if self.is_text() and options.opts.asm_end_label != "":
                 f.write(f"{options.opts.asm_end_label} {sym.name}\n")
+            elif self.is_data() and options.opts.asm_data_end_label != "":
+                f.write(f"{options.opts.asm_data_end_label} {sym.name}\n")
 
             if sym.given_name_end is not None:
                 if (
@@ -103,6 +108,12 @@ class CommonSegTextbin(CommonSegment):
                     f.write(f"{asm_label} {sym.given_name_end}\n")
                     if asm_label == ".globl":
                         f.write(f"{sym.given_name_end}:\n")
+                    if self.is_text() and options.opts.asm_end_label != "":
+                        f.write(f"{options.opts.asm_end_label} {sym.given_name_end}\n")
+                    elif self.is_data() and options.opts.asm_data_end_label != "":
+                        f.write(
+                            f"{options.opts.asm_data_end_label} {sym.given_name_end}\n"
+                        )
 
     def split(self, rom_bytes):
         if self.rom_end is None:

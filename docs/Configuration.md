@@ -122,6 +122,21 @@ String that is placed before the contents of newly-generated assembly (`.s`) fil
 generated_s_preamble: .set fp=64
 ```
 
+### generated_macro_inc_content
+
+String that is placed after the contents of the splat-generated `macro.inc` file.
+
+### generate_asm_macros_files
+
+Tells splat to regenerate files containing assembly macros and C macros each time splat is run.
+
+Specifically splat generates `include/include_asm.h`, `include/macro.inc`, `include/labels.inc` and `include/gte_macros.inc`, which contain the proper C and assembly macro definitions expected for building the generated assembly correctly. This allows splat to update the macro definitions with minimal user intervention and headaches.
+
+Turning this off can be useful in case the user wants to control exactly the contents of those files, but it is not recommended, since the user definitions may get outdated. Before turning this option off consider using the [`generated_macro_inc_content`](#generated_macro_inc_content) option to customize the contents of the generated `macro.inc` file.
+
+Some files may not be generated depending on the selected platform and compiler, because those setups don't require them. For example `include_asm.h` won't be generated if the compiler is set to `IDO` or `MWCCPS2`. `include/gte_macros.inc` is only generated on psx projects.
+
+Defaults to `True`.
 
 ### o_as_suffix
 
@@ -203,9 +218,15 @@ symbol_addrs_path: path/to/symbol_addrs
 
 
 
-### reloc_addrs_paths
+### reloc_addrs_path
 
+Determines the path to the reloc addresses file(s). A `reloc_addrs` file contains metadata to override relocations within the generated assembly. For more information about the syntax and how to use it refer to the corresponding [reloc_addrs chapter](Advanced-Reloc.md).
 
+It's possible to use more than one file by supplying a list instead of a string.
+
+#### Default
+
+`reloc_addrs.txt`
 
 ### build_path
 Path that built files will be found. Used for generation of the linker script.
@@ -647,25 +668,47 @@ Determines the macro used to declare functions in asm files
 
 ### asm_function_alt_macro
 
-Determines the macro used to declare symbols in the middle of functions in asm files (which may be alternative entries)
+Determines the macro used to declare symbols in the middle of functions in asm files (which may be alternative entries).
+
+Defaults to `alabel`.
 
 ### asm_jtbl_label_macro
 
-Determines the macro used to declare jumptable labels in asm files
+Determines the macro used to declare jumptable labels in asm files.
+
+Defaults to `jlabel`.
 
 ### asm_data_macro
 
-Determines the macro used to declare data symbols in asm files
+Determines the macro used to declare data symbols in asm files.
+
+Defaults to `dlabel`.
 
 ### asm_end_label
 
-Determines the macro used at the end of a function, such as endlabel or .end
+Determines the macro used at the end of a function, such as `endlabel` or `.end`.
+
+Defaults to `endlabel`.
+
+### asm_data_end_label
+
+Determines the macro used at the end of a data symbol.
+
+Defaults to `enddlabel`.
 
 ### asm_ehtable_label_macro
 
 Determines the macro used to declare ehtable labels in asm files.
 
 Defaults to `ehlabel`
+
+### asm_nonmatching_label_macro
+
+Determines the macro used to declare the given symbol is a non matching one.
+
+Explicitly specifying that a symbol haven't been matched yet in the generated assembly is useful for other tools that consume the build artifacts of the project. This information can be used by those tools for stuff like progress reporting.
+
+Defaults to `nonmatching`
 
 ### asm_emit_size_directive
 

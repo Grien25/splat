@@ -189,9 +189,9 @@ Data located in the ROM that is linked from a C file. Use the `.data` segment to
 
 **NOTE:** `splat` will not generate any `.data.s` files for these `.` (dot) sections.
 
-## `.sdata`
+## `sdata` / `.sdata`
 
-The `.sdata` segment behaves the same as the `.data` segment but supports "small data" linker sections named `.sdata`.
+The `sdata` and `.sdata` segments behaves the same as the `data` and `.data` segments, but supports "small data" linker sections.
 
 ## `rodata`
 
@@ -263,9 +263,9 @@ Links the `.bss` section of the associated `c` file.
 - { start: 0x7D1AD0, type: .bss, name: filepath, vram: 0x803C0420 }
 ```
 
-## `.sbss`
+## `sbss` / `.sbss`
 
-The `.sbss` segment behaves the same as the `.bss` segment but supports "small bss" linker sections named `.sbss`.
+The `sbss` and `.sbss` segments behaves the same as the `bss` and `.bss` segments, but supports "small bss" linker sections.
 
 ## `lib`
 
@@ -582,4 +582,37 @@ Defaults to the global option.
     start: 0x001060
     vram: 0x80000460
     suggestion_rodata_section_start: False
+```
+
+### `pair_segment`
+
+Allows pairing sections of two different segments together.
+
+The main purpose of this is to make the automatic rodata-to-function migration possible, since the default behavior only allows pairing different sections of the same name under the same segment only. This kind of ROM layout can be seen on some TLB games from N64 projects.
+
+This value expects the name of the other segment that should be paired to the current one. Only one of the two to-be-paired segments should have this attribute.
+
+**Example:**
+
+```yaml
+  - name:  init
+    type:  code
+    start: 0x00001000
+    vram:  0x10001000
+    pair_segment: init_data # This is the name of the following segment.
+    subsegments:
+      # -- snip --
+      - [0x15550, c, libultra/audio/init_15550]
+      # -- snip --
+
+  - name:  init_data
+    type:  code
+    start: 0x000290D0
+    vram:  0x800290D0
+    bss_size: 0x16690
+    # Note there's no `pair_segment: init` on this segment.
+    subsegments:
+      # -- snip --
+      - [0x2C6B0, .rodata, libultra/audio/init_15550]
+      # -- snip --
 ```
